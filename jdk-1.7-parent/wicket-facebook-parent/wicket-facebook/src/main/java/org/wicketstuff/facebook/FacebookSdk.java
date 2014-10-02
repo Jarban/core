@@ -4,11 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.security.auth.callback.LanguageCallback;
+
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
 import org.apache.wicket.markup.head.StringHeaderItem;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.wicketstuff.facebook.FacebookRootProvider;
 
 /**
  * https://developers.facebook.com/docs/reference/javascript/ <br>
@@ -19,8 +22,8 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
  * &lt;div id="fb-root"&gt;&lt;/div&gt;
  * </pre>
  * 
- * In your wicket markup you should add the wicket-id and place the tag right after the opening
- * &lt;body&gt;.
+ * In your wicket markup you should add the wicket-id and place the tag right
+ * after the opening &lt;body&gt;.
  * 
  * <pre>
  * &lt;html&gt;
@@ -34,26 +37,29 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
  * 
  * @author Till Freier
  * 
- */
-public class FacebookSdk extends WebMarkupContainer implements FacebookRootProvider
-{
+ */	
+public class FacebookSdk extends WebMarkupContainer implements
+		FacebookRootProvider {
 	private final String appId;
+	private Localization lang = Localization.en_US;
 
 	private final Map<String, String> metaParams = new HashMap<String, String>();
 
+	public enum Localization {
+		en_US, cs_CZ
+	}
+	
 	/**
 	 * @param id
 	 */
-	public FacebookSdk(final String id)
-	{
+	public FacebookSdk(final String id) {
 		this(id, null);
 	}
 
 	/**
 	 * @param id
 	 */
-	public FacebookSdk(final String id, final String appId)
-	{
+	public FacebookSdk(final String id, final String appId) {
 		super(id);
 
 		this.appId = appId;
@@ -64,8 +70,7 @@ public class FacebookSdk extends WebMarkupContainer implements FacebookRootProvi
 	 * {@inheritDoc}
 	 */
 	@Override
-	public String getMarkupId()
-	{
+	public String getMarkupId() {
 		return "fb-root";
 	}
 
@@ -73,8 +78,7 @@ public class FacebookSdk extends WebMarkupContainer implements FacebookRootProvi
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean isVisible()
-	{
+	public boolean isVisible() {
 		return true;
 	}
 
@@ -83,9 +87,9 @@ public class FacebookSdk extends WebMarkupContainer implements FacebookRootProvi
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void renderHead(final IHeaderResponse response)
-	{
-		response.render(JavaScriptHeaderItem.forUrl("//connect.facebook.net/en_US/all.js"));
+	public void renderHead(final IHeaderResponse response) {
+		response.render(JavaScriptHeaderItem
+				.forUrl("//connect.facebook.net/" + lang + "/all.js"));
 
 		final StringBuilder js = new StringBuilder();
 		js.append("FB.init({");
@@ -98,8 +102,7 @@ public class FacebookSdk extends WebMarkupContainer implements FacebookRootProvi
 
 		response.render(OnDomReadyHeaderItem.forScript(js));
 
-		for (final Entry<String, String> entry : metaParams.entrySet())
-		{
+		for (final Entry<String, String> entry : metaParams.entrySet()) {
 			final StringBuilder sb = new StringBuilder();
 			sb.append("<meta property=\"").append(entry.getKey()).append("\" ");
 			sb.append("content=\"").append(entry.getValue()).append("\" />");
@@ -109,8 +112,7 @@ public class FacebookSdk extends WebMarkupContainer implements FacebookRootProvi
 		}
 	}
 
-	public void setFbAdmins(final String... userId)
-	{
+	public void setFbAdmins(final String... userId) {
 		final StringBuilder admins = new StringBuilder();
 		for (final String id : userId)
 			admins.append(id).append(',');
@@ -120,11 +122,14 @@ public class FacebookSdk extends WebMarkupContainer implements FacebookRootProvi
 		metaParams.put("fb:admins", admins.toString());
 	}
 
-	public void setOgProperty(final String property, final String value)
-	{
+	public void setOgProperty(final String property, final String value) {
 		final StringBuilder sb = new StringBuilder(property.length() + 3);
 		sb.append("og:").append(property);
 
 		metaParams.put(sb.toString(), value);
+	}
+	
+	public void setLocalization(Localization localization){
+		this.lang = localization;
 	}
 }
